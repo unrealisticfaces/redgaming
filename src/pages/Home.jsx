@@ -1,42 +1,126 @@
-import { ArrowRight, ShieldCheck, Zap, WifiOff } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowRight, ShieldCheck, Zap, MonitorPlay, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
 
 export default function Home() {
+  const [trendingGames, setTrendingGames] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const q = query(collection(db, "games"), where("isTrending", "==", true))
+        const querySnapshot = await getDocs(q)
+        const gamesList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        setTrendingGames(gamesList)
+      } catch (error) {
+        console.error("Failed to fetch trending games:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTrending()
+  }, [])
+
+  // Duplicate the array multiple times to ensure the CSS marquee always fills the screen width
+  const marqueeGames = [...trendingGames, ...trendingGames, ...trendingGames, ...trendingGames]
+
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+    <div className="flex flex-col items-center justify-center py-12 w-full animate-in fade-in duration-1000">
+      
+      <div className="text-center max-w-4xl mx-auto mb-32 z-10">
+        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-[1.1] text-white drop-shadow-2xl">
+          YOUR GAMES. <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-br from-red-400 via-red-500 to-red-800 drop-shadow-[0_0_40px_rgba(239,68,68,0.5)]">
+            YOUR RULES.
+          </span>
+        </h1>
 
-      <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight text-white drop-shadow-2xl">
-        Unleash Premium <br />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700 drop-shadow-[0_0_25px_rgba(220,38,38,0.4)]">
-          Titles
-        </span>
-      </h1>
+        <p className="text-lg text-neutral-300 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+          Escape the bloated launchers and DRM restrictions. Build an elite library of highly optimized, premium games that belong exclusively to you. Download once, play forever.
+        </p>
 
-      <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-12 leading-relaxed">
-        High-performance, DRM-free offline titles engineered for flawless execution. Download directly, install locally, and play without network interruptions.
-      </p>
+        <Link to="/products" className="group relative inline-flex items-center gap-3 bg-white text-black px-10 py-4 rounded-sm font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-colors duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(239,68,68,0.7)]">
+          <span className="text-red-500 group-hover:text-white transition-colors">[</span>
+          <span className="relative z-10 flex items-center gap-2">
+            ENTER THE VAULT
+            <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
+          </span>
+          <span className="text-red-500 group-hover:text-white transition-colors">]</span>
+        </Link>
+      </div>
 
-      <Link to="/products" className="group relative inline-flex items-center gap-3 bg-red-600 text-white px-8 py-4 rounded-lg font-black uppercase tracking-widest hover:bg-red-500 hover:scale-105 transition-all duration-300 shadow-[0_0_30px_rgba(220,38,38,0.3)] hover:shadow-[0_0_50px_rgba(220,38,38,0.5)]">
-        Browse Library
-        <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
-      </Link>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 w-full max-w-4xl">
-        <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 p-6 rounded-xl flex flex-col items-center hover:border-red-600/30 transition-colors shadow-lg hover:shadow-xl">
-          <Zap className="text-red-600 mb-4" size={32} />
-          <h3 className="text-lg font-bold text-white mb-2">Max Framerates</h3>
-          <p className="text-sm text-neutral-500">Optimized builds ensuring you get every single frame your rig can push.</p>
+      <div className="w-full max-w-[100vw] relative mb-32 z-10">
+        <div className="flex items-center gap-3 mb-8 px-6 lg:px-0 max-w-7xl mx-auto">
+          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,1)]"></div>
+          <h2 className="text-xl font-black text-white tracking-widest uppercase drop-shadow-md">Trending Games</h2>
         </div>
-        <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 p-6 rounded-xl flex flex-col items-center hover:border-red-600/30 transition-colors shadow-lg hover:shadow-xl">
-          <WifiOff className="text-red-600 mb-4" size={32} />
-          <h3 className="text-lg font-bold text-white mb-2">Zero Network Lag</h3>
-          <p className="text-sm text-neutral-500">100% local execution. No telemetry, no always-online DRM bottlenecks.</p>
+
+        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-[#0a0a0a] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-[#0a0a0a] to-transparent z-10 pointer-events-none"></div>
+
+        <div className="overflow-hidden w-full relative h-[300px]">
+          {loading ? (
+            <div className="flex items-center justify-center h-full w-full">
+              <div className="text-red-500 animate-pulse text-xs font-black uppercase tracking-widest">Loading Uplink...</div>
+            </div>
+          ) : trendingGames.length === 0 ? (
+            <div className="flex items-center justify-center h-full w-full">
+              <div className="text-neutral-500 text-xs font-black uppercase tracking-widest">No trending games configured in database.</div>
+            </div>
+          ) : (
+            <div className="flex animate-marquee gap-5 px-5 hover:[animation-play-state:paused]">
+              {marqueeGames.map((game, index) => (
+                <div key={`${game.id}-${index}`} className="w-[180px] sm:w-[220px] flex-shrink-0 bg-[#141414] rounded-sm border border-white/10 overflow-hidden transition-all duration-500 group relative shadow-xl">
+                  
+                  <div className="aspect-[3/4] w-full bg-[#111] relative flex items-center justify-center">
+                    {game.image ? (
+                      <img src={game.image} alt={game.title} className="absolute inset-0 w-full h-full object-cover z-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-b from-[#222] to-[#141414] z-0"></div>
+                    )}
+                    
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+                    
+                    {!game.image && <ImageIcon size={28} className="text-white/10 group-hover:text-white/20 transition-colors duration-700 z-0 scale-150 group-hover:scale-100" />}
+                    
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent z-20">
+                      <h3 className="text-xs font-black text-white tracking-widest uppercase truncate drop-shadow-md">{game.title}</h3>
+                    </div>
+                  </div>
+                  
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 p-6 rounded-xl flex flex-col items-center hover:border-red-600/30 transition-colors shadow-lg hover:shadow-xl">
-          <ShieldCheck className="text-red-600 mb-4" size={32} />
-          <h3 className="text-lg font-bold text-white mb-2">Clean Files</h3>
-          <p className="text-sm text-neutral-500">Rigorous integrity checks guarantee your downloads are pristine and safe.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl px-6 lg:px-0 z-10">
+        <div className="bg-[#141414]/80 backdrop-blur-xl border border-white/10 p-8 flex flex-col items-center hover:border-red-500/50 transition-all duration-500 group rounded-sm shadow-2xl hover:shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:-translate-y-1">
+          <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-red-500/20">
+            <Zap className="text-red-400" size={24} />
+          </div>
+          <h3 className="text-sm font-black text-white mb-3 tracking-widest uppercase drop-shadow-sm">Optimized Builds</h3>
+          <p className="text-xs text-neutral-400 leading-relaxed font-medium text-center">Engineered for flawless execution, ensuring you extract every single frame your hardware can generate.</p>
+        </div>
+
+        <div className="bg-[#141414]/80 backdrop-blur-xl border border-white/10 p-8 flex flex-col items-center hover:border-red-500/50 transition-all duration-500 group rounded-sm shadow-2xl hover:shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:-translate-y-1">
+          <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-red-500/20">
+            <MonitorPlay className="text-red-400" size={24} />
+          </div>
+          <h3 className="text-sm font-black text-white mb-3 tracking-widest uppercase drop-shadow-sm">Seamless Experience</h3>
+          <p className="text-xs text-neutral-400 leading-relaxed font-medium text-center">No telemetry, no background processes, no DRM bottlenecks. Just pure, uninterrupted gameplay.</p>
+        </div>
+
+        <div className="bg-[#141414]/80 backdrop-blur-xl border border-white/10 p-8 flex flex-col items-center hover:border-red-500/50 transition-all duration-500 group rounded-sm shadow-2xl hover:shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:-translate-y-1">
+          <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-red-500/20">
+            <ShieldCheck className="text-red-400" size={24} />
+          </div>
+          <h3 className="text-sm font-black text-white mb-3 tracking-widest uppercase drop-shadow-sm">Pristine Archives</h3>
+          <p className="text-xs text-neutral-400 leading-relaxed font-medium text-center">Rigorous integrity checks guarantee your game files are pristine, complete, and safe to launch.</p>
         </div>
       </div>
     </div>
