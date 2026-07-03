@@ -15,7 +15,6 @@ export default function Login() {
     setError('')
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      // Redirects straight to the settings panel after successful login
       navigate('/settings')
     } catch (err) {
       setError('Access Denied. Invalid credentials.')

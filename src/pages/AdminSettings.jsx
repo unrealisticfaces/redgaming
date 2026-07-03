@@ -5,10 +5,7 @@ import { ref, push, set, get, child, update, remove } from 'firebase/database'
 import { useNavigate } from 'react-router-dom'
 import { Settings, Gamepad2, TrendingUp, Shield, Save, LogOut, CheckCircle2, AlertTriangle, Trash2, Loader2, Wand2, Link as LinkIcon } from 'lucide-react'
 
-// ==========================================
-// RAWG API KEY CONFIGURED
 const RAWG_API_KEY = 'a73ea23a91934b4c9cce7dbe01a9708d'
-// ==========================================
 
 export default function AdminSettings() {
   const navigate = useNavigate()
@@ -26,7 +23,6 @@ export default function AdminSettings() {
     title: '',
     category: 'PC',
     size: '',
-    details: '',
     image: '', 
     isTrending: false
   })
@@ -80,24 +76,12 @@ export default function AdminSettings() {
       const searchData = await searchRes.json()
 
       if (searchData.results && searchData.results.length > 0) {
-        const gameId = searchData.results[0].id
+        const gameData = searchData.results[0]
         
-        const detailRes = await fetch(`https://api.rawg.io/api/games/${gameId}?key=${RAWG_API_KEY}`)
-        const detailData = await detailRes.json()
-
-        // Clean any HTML tags out of the description
-        let cleanDescription = detailData.description_raw || detailData.description.replace(/(<([^>]+)>)/gi, "")
-        
-        // Truncate overly long descriptions from RAWG so it doesn't flood the DB
-        if (cleanDescription.length > 400) {
-          cleanDescription = cleanDescription.substring(0, 400).trim() + "..."
-        }
-
         setNewGame(prev => ({
           ...prev,
-          title: detailData.name, 
-          image: detailData.background_image || '', 
-          details: cleanDescription || prev.details
+          title: gameData.name, 
+          image: gameData.background_image || ''
         }))
         
         showMessage('success', 'Game data auto-filled successfully!')
@@ -123,7 +107,7 @@ export default function AdminSettings() {
         createdAt: new Date().toISOString()
       })
       showMessage('success', 'Game added to catalog successfully.')
-      setNewGame({ title: '', category: 'PC', size: '', details: '', image: '', isTrending: false })
+      setNewGame({ title: '', category: 'PC', size: '', image: '', isTrending: false })
       fetchGames()
     } catch (error) {
       showMessage('error', 'Failed to add game. Check Rules.')
@@ -260,11 +244,6 @@ export default function AdminSettings() {
                       <input type="url" value={newGame.image} onChange={e => setNewGame({...newGame, image: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm py-3 pl-9 pr-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none" placeholder="https://..." />
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">System Assessment / Details</label>
-                  <textarea rows="4" required value={newGame.details} onChange={e => setNewGame({...newGame, details: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none resize-none"></textarea>
                 </div>
 
                 <button 

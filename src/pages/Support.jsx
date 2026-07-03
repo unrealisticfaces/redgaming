@@ -49,7 +49,6 @@ export default function Support() {
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col justify-center flex-grow animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* Header Section */}
       <div className="text-center md:text-left mb-8">
         <h2 className="text-3xl md:text-4xl font-black mb-4 text-white tracking-tighter uppercase drop-shadow-md">Direct Channels</h2>
         <p className="text-sm text-neutral-300 font-medium max-w-2xl">
@@ -57,7 +56,6 @@ export default function Support() {
         </p>
       </div>
 
-      {/* Interactive Map Banner */}
       <div className="w-full h-48 md:h-64 bg-[#141414] rounded-sm border border-white/10 mb-10 overflow-hidden relative group shadow-xl">
         <iframe
           src="https://maps.google.com/maps?q=Kajang,%20Selangor,%20Malaysia&t=&z=12&ie=UTF8&iwloc=&output=embed"
@@ -69,14 +67,12 @@ export default function Support() {
           title="HQ Location Map"
         ></iframe>
         
-        {/* Floating Location Badge */}
         <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-sm flex items-center gap-2 z-10 pointer-events-none shadow-lg">
           <MapPin size={14} className="text-red-500" />
           <span className="text-[10px] font-black text-white uppercase tracking-widest drop-shadow-sm">HQ: Kajang, Selangor</span>
         </div>
       </div>
       
-      {/* Social Links Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {socials.map((social) => (
           <a 

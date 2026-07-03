@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Products from './pages/Products.jsx'
@@ -5,12 +6,22 @@ import About from './pages/About.jsx'
 import FAQs from './pages/FAQs.jsx'
 import Support from './pages/Support.jsx'
 import Login from './pages/Login.jsx'
-import AdminSettings from './pages/AdminSettings.jsx' // <--- IMPORT ADDED
+import AdminSettings from './pages/AdminSettings.jsx'
 import logo from './assets/logo.jpg' 
-import { Settings } from 'lucide-react' // <--- IMPORT ADDED
+import { Settings, Menu, X } from 'lucide-react'
 
 function App() {
   const location = useLocation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+  }, [mobileMenuOpen])
 
   const navLinks = [
     { path: '/', label: 'HOME' },
@@ -23,21 +34,21 @@ function App() {
   return (
     <div className="min-h-screen text-neutral-200 font-sans selection:bg-red-600 selection:text-white flex flex-col relative">
       
+      {/* Background Effects */}
       <div className="fixed inset-0 z-[-5] bg-[#0a0a0a]"></div>
-      
       <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-red-500/15 blur-[120px] animate-pulse z-[-4] pointer-events-none" style={{ animationDuration: '4s' }}></div>
       <div className="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-red-600/10 blur-[150px] animate-pulse z-[-4] pointer-events-none" style={{ animationDuration: '7s' }}></div>
-
       <div className="fixed inset-0 z-[-3] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-transparent via-[#0a0a0a]/60 to-[#0a0a0a] pointer-events-none"></div>
-
       <div className="fixed inset-0 z-[-2] bg-tech-grid opacity-60 pointer-events-none"></div>
       <div className="fixed inset-0 z-[-1] scanlines opacity-40 pointer-events-none mix-blend-overlay"></div>
 
-      <nav className="fixed top-0 left-0 w-full z-50 bg-[#0a0a0a]/80 backdrop-blur-2xl border-b border-white/10 shadow-xl">
-        <div className="container mx-auto px-6 h-20 flex items-center relative">
+      {/* Top Navbar */}
+      <nav className="fixed top-0 left-0 w-full z-50 bg-[#0a0a0a]/90 backdrop-blur-2xl border-b border-white/10 shadow-xl">
+        <div className="container mx-auto px-6 h-20 flex items-center justify-between relative z-50">
           
-          <div className="flex items-center gap-4 z-20">
-            <Link to="/" className="flex items-center gap-3 group">
+          {/* Logo & Admin Link */}
+          <div className="flex items-center gap-4">
+            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 group">
               <div className="relative overflow-hidden rounded-full shadow-[0_0_15px_rgba(220,38,38,0.4)]">
                 <img 
                   src={logo} 
@@ -50,13 +61,12 @@ function App() {
                 RED<span className="text-red-500">GAMING</span>
               </span>
             </Link>
-            
-            {/* Secret Admin Shortcut */}
-            <Link to="/settings" className="text-transparent hover:text-neutral-500 transition-colors duration-300">
+            <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className="text-transparent hover:text-neutral-500 transition-colors duration-300">
               <Settings size={14} />
             </Link>
           </div>
 
+          {/* Desktop Navigation Links */}
           <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 h-full items-center space-x-1">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path
@@ -79,9 +89,44 @@ function App() {
             })}
           </div>
 
+          {/* Mobile Menu Toggle Button */}
+          <button 
+            className="lg:hidden text-white p-2 hover:bg-white/5 rounded-sm transition-colors focus:outline-none"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={26} className="text-red-500" /> : <Menu size={26} />}
+          </button>
+        </div>
+
+        {/* SOLID, HIGH-CONTRAST MOBILE DROPDOWN (No Transparency) */}
+        <div 
+          className={`lg:hidden absolute top-[100%] left-0 w-full bg-[#111111] border-b border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.9)] overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="flex flex-col py-2">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-8 py-5 text-sm font-black tracking-[0.2em] uppercase border-l-4 transition-all duration-300 ${
+                    isActive 
+                      ? 'border-red-500 text-white bg-red-500/10' 
+                      : 'border-transparent text-neutral-300 hover:text-white hover:bg-[#222222]'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+          </div>
         </div>
       </nav>
 
+      {/* Main Content Router */}
       <main className="container mx-auto px-6 pt-32 pb-24 relative flex-grow flex flex-col z-10">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -90,10 +135,11 @@ function App() {
           <Route path="/faqs" element={<FAQs />} />
           <Route path="/support" element={<Support />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/settings" element={<AdminSettings />} /> {/* <--- ROUTE ADDED */}
+          <Route path="/settings" element={<AdminSettings />} />
         </Routes>
       </main>
 
+      {/* Desktop Footer */}
       <footer className="w-full border-t border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl py-10 mt-auto z-20 relative">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
@@ -102,18 +148,19 @@ function App() {
               © 2026 RED GAMING. All systems online.
             </div>
           </div>
+          
           <div className="flex gap-6">
-            <a href="#" aria-label="Facebook" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
+            <a href="https://www.facebook.com/share/1D5zLdqBXq/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
-            <a href="#" aria-label="WhatsApp" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
+            <a href="https://wa.me/60179797287" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
             </a>
-            <a href="#" aria-label="Telegram" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            <a href="https://tiktok.com/@red.pcgamingbajet" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
             </a>
-            <a href="#" aria-label="Instagram" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            <a href="https://my.shp.ee/Lz8hFW9K" target="_blank" rel="noopener noreferrer" aria-label="Shopee" className="text-neutral-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all hover:-translate-y-1 duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
             </a>
           </div>
         </div>
