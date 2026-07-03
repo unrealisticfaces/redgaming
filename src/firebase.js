@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app"
 import { getAuth } from "firebase/auth"
-import { getFirestore } from "firebase/firestore"
+import { getDatabase } from "firebase/database"
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEYqh_sbg1S9dxbQmtdhIZl6cuHC7S_YM",
@@ -8,12 +8,11 @@ const firebaseConfig = {
   projectId: "redgaming-ef36c",
   storageBucket: "redgaming-ef36c.firebasestorage.app",
   messagingSenderId: "278800769536",
-  appId: "1:278800769536:web:5bf043027c2641347aeee5"
+  appId: "1:278800769536:web:5bf043027c2641347aeee5",
+  databaseURL: "https://redgaming-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/"
 }
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig)
 
-// Export Authentication and Database instances
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+export const db = getDatabase(app)

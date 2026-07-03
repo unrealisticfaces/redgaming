@@ -1,37 +1,44 @@
 import { useState, useEffect } from 'react'
 import { auth, db } from '../firebase'
 import { updatePassword, onAuthStateChanged, signOut } from 'firebase/auth'
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore'
+import { ref, push, set, get, child, update, remove } from 'firebase/database'
 import { useNavigate } from 'react-router-dom'
-import { Settings, Gamepad2, TrendingUp, Shield, Upload, Save, LogOut, CheckCircle2, AlertTriangle, Trash2 } from 'lucide-react'
+import { Settings, Gamepad2, TrendingUp, Shield, Save, LogOut, CheckCircle2, AlertTriangle, Trash2, Loader2, Wand2, Link as LinkIcon } from 'lucide-react'
+
+// ==========================================
+// RAWG API KEY CONFIGURED
+const RAWG_API_KEY = 'a73ea23a91934b4c9cce7dbe01a9708d'
+// ==========================================
 
 export default function AdminSettings() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('games')
-  const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState({ type: '', text: '' })
   
+  const [authLoading, setAuthLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isFetchingAPI, setIsFetchingAPI] = useState(false)
+  
+  const [message, setMessage] = useState({ type: '', text: '' })
   const [games, setGames] = useState([])
   
-  // New Game Form State
   const [newGame, setNewGame] = useState({
     title: '',
     category: 'PC',
     size: '',
     details: '',
-    image: '',
+    image: '', 
     isTrending: false
   })
 
-  // Password State
   const [newPassword, setNewPassword] = useState('')
 
-  // Check Auth & Fetch Data
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        navigate('/login') // Kick out if not logged in
+        navigate('/login')
       } else {
+        setAuthLoading(false)
         fetchGames()
       }
     })
@@ -40,13 +47,19 @@ export default function AdminSettings() {
 
   const fetchGames = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "games"))
-      const gamesList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-      setGames(gamesList)
-      setLoading(false)
+      const dbRef = ref(db)
+      const snapshot = await get(child(dbRef, 'games'))
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+        const gamesList = Object.keys(data).map(key => ({ id: key, ...data[key] }))
+        setGames(gamesList)
+      } else {
+        setGames([])
+      }
     } catch (error) {
-      showMessage('error', 'Failed to load database.')
-      setLoading(false)
+      showMessage('error', 'Database connection failed. Check Rules.')
+    } finally {
+      setDataLoading(false)
     }
   }
 
@@ -55,22 +68,56 @@ export default function AdminSettings() {
     setTimeout(() => setMessage({ type: '', text: '' }), 4000)
   }
 
-  // Handle Base64 Image Upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setNewGame({ ...newGame, image: reader.result }) // Base64 string
+  const handleAutoFill = async () => {
+    if (!newGame.title) {
+      showMessage('error', 'Please type a Game Title first.')
+      return
+    }
+
+    setIsFetchingAPI(true)
+    try {
+      const searchRes = await fetch(`https://api.rawg.io/api/games?search=${encodeURIComponent(newGame.title)}&key=${RAWG_API_KEY}`)
+      const searchData = await searchRes.json()
+
+      if (searchData.results && searchData.results.length > 0) {
+        const gameId = searchData.results[0].id
+        
+        const detailRes = await fetch(`https://api.rawg.io/api/games/${gameId}?key=${RAWG_API_KEY}`)
+        const detailData = await detailRes.json()
+
+        // Clean any HTML tags out of the description
+        let cleanDescription = detailData.description_raw || detailData.description.replace(/(<([^>]+)>)/gi, "")
+        
+        // Truncate overly long descriptions from RAWG so it doesn't flood the DB
+        if (cleanDescription.length > 400) {
+          cleanDescription = cleanDescription.substring(0, 400).trim() + "..."
+        }
+
+        setNewGame(prev => ({
+          ...prev,
+          title: detailData.name, 
+          image: detailData.background_image || '', 
+          details: cleanDescription || prev.details
+        }))
+        
+        showMessage('success', 'Game data auto-filled successfully!')
+      } else {
+        showMessage('error', 'No game found with that title on RAWG.')
       }
-      reader.readAsDataURL(file)
+    } catch (error) {
+      showMessage('error', 'Failed to connect to RAWG API.')
+    } finally {
+      setIsFetchingAPI(false)
     }
   }
 
   const handleAddGame = async (e) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    
     try {
-      await addDoc(collection(db, "games"), {
+      const newGameRef = push(ref(db, 'games'))
+      await set(newGameRef, {
         ...newGame,
         size: Number(newGame.size),
         createdAt: new Date().toISOString()
@@ -79,14 +126,16 @@ export default function AdminSettings() {
       setNewGame({ title: '', category: 'PC', size: '', details: '', image: '', isTrending: false })
       fetchGames()
     } catch (error) {
-      showMessage('error', 'Failed to add game.')
+      showMessage('error', 'Failed to add game. Check Rules.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleDeleteGame = async (id) => {
     if(window.confirm('Are you sure you want to delete this game?')) {
       try {
-        await deleteDoc(doc(db, "games", id))
+        await remove(ref(db, `games/${id}`))
         showMessage('success', 'Game removed.')
         fetchGames()
       } catch (error) {
@@ -97,7 +146,7 @@ export default function AdminSettings() {
 
   const toggleTrending = async (game) => {
     try {
-      await updateDoc(doc(db, "games", game.id), { isTrending: !game.isTrending })
+      await update(ref(db, `games/${game.id}`), { isTrending: !game.isTrending })
       fetchGames()
     } catch (error) {
       showMessage('error', 'Failed to update trending status.')
@@ -111,7 +160,7 @@ export default function AdminSettings() {
       showMessage('success', 'Admin passcode updated successfully.')
       setNewPassword('')
     } catch (error) {
-      showMessage('error', 'Failed to update passcode. You may need to log out and log back in first.')
+      showMessage('error', 'Failed to update passcode. Log out and back in first.')
     }
   }
 
@@ -120,12 +169,17 @@ export default function AdminSettings() {
     navigate('/')
   }
 
-  if (loading) return <div className="flex-grow flex items-center justify-center text-red-500 animate-pulse">Initializing System...</div>
+  if (authLoading) {
+    return (
+      <div className="flex-grow flex items-center justify-center text-red-500 animate-pulse font-black tracking-widest uppercase text-sm gap-3">
+        <Shield size={18} className="animate-spin" /> Verifying Credentials...
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col flex-grow animate-in fade-in duration-700 py-10">
       
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
@@ -149,7 +203,6 @@ export default function AdminSettings() {
       )}
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Navigation Sidebar */}
         <div className="w-full lg:w-64 flex lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 hide-scrollbar">
           <button onClick={() => setActiveTab('games')} className={`flex items-center gap-3 px-5 py-4 rounded-sm font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'games' ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-[#141414] text-neutral-400 border border-white/10 hover:border-red-500/50 hover:text-white'}`}>
             <Gamepad2 size={16} /> Catalog Manager
@@ -162,20 +215,31 @@ export default function AdminSettings() {
           </button>
         </div>
 
-        {/* Main Content Area */}
         <div className="flex-1 w-full bg-[#141414] border border-white/10 rounded-sm shadow-2xl p-6 md:p-8">
           
-          {/* CATALOG MANAGER TAB */}
           {activeTab === 'games' && (
             <div className="animate-in fade-in duration-300">
               <h3 className="text-xl font-black text-white uppercase tracking-tight mb-6 border-b border-white/10 pb-4">Add New Title</h3>
               
               <form onSubmit={handleAddGame} className="space-y-6 mb-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">Game Title</label>
-                    <input type="text" required value={newGame.title} onChange={e => setNewGame({...newGame, title: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none" />
+                
+                <div className="bg-[#0a0a0a] border border-red-500/20 p-4 rounded-sm mb-6 flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex-1 w-full">
+                    <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">1. Search Game Title</label>
+                    <input type="text" value={newGame.title} onChange={e => setNewGame({...newGame, title: e.target.value})} className="w-full bg-[#141414] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none" placeholder="e.g., Cyberpunk 2077" />
                   </div>
+                  <button 
+                    type="button" 
+                    onClick={handleAutoFill}
+                    disabled={isFetchingAPI}
+                    className="w-full sm:w-auto bg-neutral-800 text-white px-6 py-3 rounded-sm font-black text-[10px] uppercase tracking-widest hover:bg-neutral-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 border border-white/10 hover:border-white/30"
+                  >
+                    {isFetchingAPI ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} className="text-red-400" />}
+                    {isFetchingAPI ? 'Searching...' : 'Auto-Fill Data'}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">Category</label>
                     <select value={newGame.category} onChange={e => setNewGame({...newGame, category: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none cursor-pointer">
@@ -185,74 +249,91 @@ export default function AdminSettings() {
                       <option value="Kids">Kids</option>
                     </select>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">File Size (GB)</label>
-                    <input type="number" step="0.1" required value={newGame.size} onChange={e => setNewGame({...newGame, size: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none" />
+                    <input type="number" step="0.1" required value={newGame.size} onChange={e => setNewGame({...newGame, size: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none" placeholder="0.0" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">Cover Image (Upload)</label>
-                    <label className="w-full bg-[#0a0a0a] border border-white/10 border-dashed rounded-sm p-3 flex items-center justify-center gap-2 cursor-pointer hover:border-red-500 transition-colors text-xs font-bold text-neutral-400 hover:text-white">
-                      <Upload size={14} /> {newGame.image ? 'Image Encoded (Base64)' : 'Select Image File'}
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} required />
-                    </label>
+                    <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">Cover Image URL</label>
+                    <div className="relative">
+                      <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                      <input type="url" value={newGame.image} onChange={e => setNewGame({...newGame, image: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm py-3 pl-9 pr-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none" placeholder="https://..." />
+                    </div>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">System Assessment / Details</label>
-                  <textarea rows="3" required value={newGame.details} onChange={e => setNewGame({...newGame, details: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none resize-none"></textarea>
+                  <textarea rows="4" required value={newGame.details} onChange={e => setNewGame({...newGame, details: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-3 text-xs font-bold text-white focus:border-red-500 focus:outline-none resize-none"></textarea>
                 </div>
 
-                <button type="submit" className="bg-red-600 text-white px-8 py-3 rounded-sm font-black text-[10px] uppercase tracking-widest hover:bg-red-500 transition-colors flex items-center gap-2">
-                  <Save size={14} /> Inject to Database
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting || !newGame.title}
+                  className="bg-red-600 text-white px-8 py-3 rounded-sm font-black text-[10px] uppercase tracking-widest hover:bg-red-500 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] active:scale-95"
+                >
+                  {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                  {isSubmitting ? 'Injecting...' : 'Add Game'}
                 </button>
               </form>
 
               <h3 className="text-xl font-black text-white uppercase tracking-tight mb-6 border-b border-white/10 pb-4">Current Catalog</h3>
-              <div className="space-y-3">
-                {games.map(game => (
-                  <div key={game.id} className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-sm border border-white/5">
-                    <div className="flex items-center gap-4">
-                      {game.image && <img src={game.image} alt={game.title} className="w-10 h-10 object-cover rounded-sm border border-white/10" />}
-                      <div>
-                        <div className="font-bold text-white text-sm">{game.title}</div>
-                        <div className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">{game.category} • {game.size} GB</div>
+              
+              {dataLoading ? (
+                <div className="text-red-500 text-[10px] font-black tracking-widest uppercase animate-pulse py-4">
+                  Loading Database...
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {games.map(game => (
+                    <div key={game.id} className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-sm border border-white/5">
+                      <div className="flex items-center gap-4">
+                        {game.image ? (
+                           <img src={game.image} alt={game.title} className="w-10 h-10 object-cover rounded-sm border border-white/10" />
+                        ) : (
+                           <div className="w-10 h-10 bg-[#141414] rounded-sm border border-white/10 flex items-center justify-center">
+                             <Gamepad2 size={16} className="text-neutral-600" />
+                           </div>
+                        )}
+                        <div>
+                          <div className="font-bold text-white text-sm">{game.title}</div>
+                          <div className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">{game.category} • {game.size} GB</div>
+                        </div>
                       </div>
+                      <button onClick={() => handleDeleteGame(game.id)} className="text-neutral-500 hover:text-red-500 transition-colors p-2 bg-[#141414] rounded-sm">
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                    <button onClick={() => handleDeleteGame(game.id)} className="text-neutral-500 hover:text-red-500 transition-colors p-2 bg-[#141414] rounded-sm">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
-                {games.length === 0 && <div className="text-neutral-500 text-xs font-bold">Database is empty.</div>}
-              </div>
+                  ))}
+                  {games.length === 0 && <div className="text-neutral-500 text-xs font-bold">Database is empty.</div>}
+                </div>
+              )}
             </div>
           )}
 
-          {/* TRENDING CONFIG TAB */}
           {activeTab === 'trending' && (
             <div className="animate-in fade-in duration-300">
               <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Trending Configurator</h3>
               <p className="text-xs text-neutral-400 font-medium mb-8">Select which games are displayed in the Home page marquee carousel.</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {games.map(game => (
-                  <div key={game.id} onClick={() => toggleTrending(game)} className={`flex items-center justify-between p-4 rounded-sm border cursor-pointer transition-all ${game.isTrending ? 'bg-red-500/10 border-red-500/50' : 'bg-[#0a0a0a] border-white/5 hover:border-white/20'}`}>
-                    <div className="font-bold text-sm text-white">{game.title}</div>
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${game.isTrending ? 'border-red-500 bg-red-500' : 'border-neutral-600'}`}>
-                      {game.isTrending && <CheckCircle2 size={12} className="text-white" />}
+              {dataLoading ? (
+                <div className="text-red-500 text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Database...</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {games.map(game => (
+                    <div key={game.id} onClick={() => toggleTrending(game)} className={`flex items-center justify-between p-4 rounded-sm border cursor-pointer transition-all ${game.isTrending ? 'bg-red-500/10 border-red-500/50' : 'bg-[#0a0a0a] border-white/5 hover:border-white/20'}`}>
+                      <div className="font-bold text-sm text-white">{game.title}</div>
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${game.isTrending ? 'border-red-500 bg-red-500' : 'border-neutral-600'}`}>
+                        {game.isTrending && <CheckCircle2 size={12} className="text-white" />}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {games.length === 0 && <div className="text-neutral-500 text-xs font-bold col-span-2">No games in database.</div>}
-              </div>
+                  ))}
+                  {games.length === 0 && <div className="text-neutral-500 text-xs font-bold col-span-2">No games in database.</div>}
+                </div>
+              )}
             </div>
           )}
 
-          {/* SECURITY TAB */}
           {activeTab === 'security' && (
             <div className="animate-in fade-in duration-300">
               <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Security Protocols</h3>
@@ -263,7 +344,7 @@ export default function AdminSettings() {
                   <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">New Passcode</label>
                   <input type="password" required minLength="6" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm p-4 text-xs font-bold text-white focus:border-red-500 focus:outline-none" />
                 </div>
-                <button type="submit" className="bg-red-600 text-white px-8 py-3 rounded-sm font-black text-[10px] uppercase tracking-widest hover:bg-red-500 transition-colors flex items-center gap-2">
+                <button type="submit" className="bg-red-600 text-white px-8 py-3 rounded-sm font-black text-[10px] uppercase tracking-widest hover:bg-red-500 transition-colors flex items-center gap-2 active:scale-95">
                   <Shield size={14} /> Update Credentials
                 </button>
               </form>

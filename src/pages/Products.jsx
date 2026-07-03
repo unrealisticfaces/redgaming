@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Image as ImageIcon, Search, X, MonitorPlay, Cpu, Gamepad2, HardDrive, Save, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react'
-import { collection, getDocs } from 'firebase/firestore'
+import { ref, get, child } from 'firebase/database'
 import { db } from '../firebase'
 
 export default function Products() {
@@ -19,11 +19,18 @@ export default function Products() {
   useEffect(() => {
     const fetchCatalog = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "games"))
-        const gamesList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-        setGames(gamesList)
+        const dbRef = ref(db)
+        const snapshot = await get(child(dbRef, 'games'))
+        
+        if (snapshot.exists()) {
+          const data = snapshot.val()
+          const gamesList = Object.keys(data).map(key => ({ id: key, ...data[key] }))
+          setGames(gamesList)
+        } else {
+          setGames([])
+        }
       } catch (error) {
-        console.error("Failed to fetch catalog:", error)
+        console.error("Failed to fetch catalog")
       } finally {
         setLoading(false)
       }
@@ -260,15 +267,15 @@ export default function Products() {
             onClick={() => setSelectedGameModal(null)}
           ></div>
           
-          <div className="relative w-full max-w-4xl bg-[#141414] border border-white/10 rounded-sm shadow-2xl flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh]">
+          <div className="relative w-full max-w-3xl bg-[#141414] border border-white/10 rounded-sm shadow-2xl flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-300 max-h-[85vh] md:h-[500px]">
             
-            <div className="w-full md:w-2/5 aspect-[16/9] md:aspect-auto bg-[#111] relative flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10 flex-shrink-0">
+            <div className="w-full md:w-[45%] h-48 md:h-full bg-[#111] relative flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10 flex-shrink-0">
               {selectedGameModal.image ? (
                 <img src={selectedGameModal.image} alt={selectedGameModal.title} className="absolute inset-0 w-full h-full object-cover z-0" />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-b from-[#222] to-[#141414] z-0"></div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-0"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 md:from-black/50 to-transparent z-0"></div>
               
               {!selectedGameModal.image && <ImageIcon size={64} className="text-white/10 drop-shadow-2xl z-0" />}
               
@@ -277,74 +284,83 @@ export default function Products() {
               </div>
             </div>
 
-            <div className="w-full md:w-3/5 p-6 sm:p-10 flex flex-col overflow-y-auto relative bg-[#141414]">
+            {/* FIXED UI: Flex layout pins the header and button, making only the description scrollable */}
+            <div className="w-full md:w-[55%] flex flex-col relative bg-[#141414] h-full overflow-hidden">
+              
               <button 
                 onClick={() => setSelectedGameModal(null)} 
-                className="absolute top-4 right-4 text-neutral-400 hover:text-white bg-black/30 p-2 rounded-sm border border-white/10 hover:border-red-500/50 transition-all duration-300 z-10 hover:bg-red-500/20"
+                className="absolute top-4 right-4 text-neutral-400 hover:text-white bg-black/30 p-2 rounded-sm border border-white/10 hover:border-red-500/50 transition-all duration-300 z-20 hover:bg-red-500/20"
               >
                 <X size={20} />
               </button>
 
-              <div className="mb-8 pr-8">
-                <h2 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight mb-3 drop-shadow-md">
-                  {selectedGameModal.title}
-                </h2>
-                <div className="flex items-center gap-3">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#222] border border-white/10 text-white text-[10px] font-black tracking-widest uppercase">
-                    <HardDrive size={12} className="text-red-400" />
-                    {selectedGameModal.size} GB
+              <div className="p-6 sm:p-8 flex flex-col h-full">
+                
+                {/* 1. Header (Pinned) */}
+                <div className="mb-6 pr-8 flex-shrink-0">
+                  <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mb-3 drop-shadow-md line-clamp-2">
+                    {selectedGameModal.title}
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#222] border border-white/10 text-white text-[10px] font-black tracking-widest uppercase">
+                      <HardDrive size={12} className="text-red-400" />
+                      {selectedGameModal.size} GB
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-8 flex-grow">
-                <div>
-                  <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    System Assessment
-                  </h4>
-                  <p className="text-sm text-neutral-300 leading-relaxed font-medium whitespace-pre-wrap">
-                    {selectedGameModal.details || `Fully optimized executable. Zero background telemetry. Experience pristine, uninterrupted gameplay exactly as it was meant to be played.`}
-                  </p>
+                {/* 2. Middle Content (Scrolls if text is too long) */}
+                <div className="space-y-6 flex-grow overflow-y-auto pr-4 -mr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#ef4444 transparent' }}>
+                  <div>
+                    <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                      System Assessment
+                    </h4>
+                    <p className="text-xs text-neutral-300 leading-relaxed font-medium whitespace-pre-wrap">
+                      {selectedGameModal.details || `Fully optimized executable. Zero background telemetry. Experience pristine, uninterrupted gameplay exactly as it was meant to be played.`}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pb-2">
+                     <div className="bg-[#222] p-3 rounded-sm border border-white/5 hover:border-red-500/30 transition-colors">
+                       <MonitorPlay size={16} className="text-red-400 mb-2" />
+                       <div className="text-[8px] font-black text-neutral-400 uppercase tracking-widest mb-1">Resolution</div>
+                       <div className="text-xs font-bold text-white">Up to 4K</div>
+                     </div>
+                     <div className="bg-[#222] p-3 rounded-sm border border-white/5 hover:border-red-500/30 transition-colors">
+                       <Cpu size={16} className="text-red-400 mb-2" />
+                       <div className="text-[8px] font-black text-neutral-400 uppercase tracking-widest mb-1">Performance</div>
+                       <div className="text-xs font-bold text-white">Unlocked FPS</div>
+                     </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="bg-[#222] p-4 rounded-sm border border-white/5 hover:border-red-500/30 transition-colors">
-                     <MonitorPlay size={18} className="text-red-400 mb-3" />
-                     <div className="text-[9px] font-black text-neutral-400 uppercase tracking-widest mb-1">Resolution</div>
-                     <div className="text-xs font-bold text-white">Up to 4K</div>
-                   </div>
-                   <div className="bg-[#222] p-4 rounded-sm border border-white/5 hover:border-red-500/30 transition-colors">
-                     <Cpu size={18} className="text-red-400 mb-3" />
-                     <div className="text-[9px] font-black text-neutral-400 uppercase tracking-widest mb-1">Performance</div>
-                     <div className="text-xs font-bold text-white">Unlocked FPS</div>
-                   </div>
+                {/* 3. Footer Button (Pinned) */}
+                <div className="mt-4 pt-4 border-t border-white/10 flex-shrink-0">
+                  <button 
+                    onClick={() => {
+                      toggleGameSelection(selectedGameModal)
+                      setSelectedGameModal(null)
+                    }}
+                    className={`w-full font-black text-xs uppercase tracking-[0.2em] py-4 rounded-sm transition-all duration-300 flex items-center justify-center gap-3 group ${
+                      cart.some(g => g.id === selectedGameModal.id)
+                        ? 'bg-[#222] text-red-400 border border-red-500/50 hover:bg-red-500/20'
+                        : 'bg-red-600 text-white hover:bg-red-500 hover:shadow-[0_0_25px_rgba(239,68,68,0.6)]'
+                    }`}
+                  >
+                    {cart.some(g => g.id === selectedGameModal.id) ? (
+                      <>
+                        <Trash2 size={16} /> Remove from Drive
+                      </>
+                    ) : (
+                      <>
+                        <Gamepad2 size={16} className="group-hover:scale-110 transition-transform" />
+                        Add to Drive
+                      </>
+                    )}
+                  </button>
                 </div>
-              </div>
 
-              <div className="mt-10 pt-6 border-t border-white/10">
-                <button 
-                  onClick={() => {
-                    toggleGameSelection(selectedGameModal)
-                    setSelectedGameModal(null)
-                  }}
-                  className={`w-full font-black text-xs uppercase tracking-[0.2em] py-4 rounded-sm transition-all duration-300 flex items-center justify-center gap-3 group ${
-                    cart.some(g => g.id === selectedGameModal.id)
-                      ? 'bg-[#222] text-red-400 border border-red-500/50 hover:bg-red-500/20'
-                      : 'bg-red-600 text-white hover:bg-red-500 hover:shadow-[0_0_25px_rgba(239,68,68,0.6)]'
-                  }`}
-                >
-                  {cart.some(g => g.id === selectedGameModal.id) ? (
-                    <>
-                      <Trash2 size={16} /> Remove from Drive
-                    </>
-                  ) : (
-                    <>
-                      <Gamepad2 size={16} className="group-hover:scale-110 transition-transform" />
-                      Add to Drive
-                    </>
-                  )}
-                </button>
               </div>
             </div>
 

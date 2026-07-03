@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowRight, ShieldCheck, Zap, MonitorPlay, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { ref, get } from 'firebase/database'
 import { db } from '../firebase'
 
 export default function Home() {
@@ -11,10 +11,20 @@ export default function Home() {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const q = query(collection(db, "games"), where("isTrending", "==", true))
-        const querySnapshot = await getDocs(q)
-        const gamesList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-        setTrendingGames(gamesList)
+        // Fetch all games, then filter locally to avoid Firebase indexing rule errors
+        const snapshot = await get(ref(db, 'games'))
+        
+        if (snapshot.exists()) {
+          const data = snapshot.val()
+          // Map to array and strictly filter where isTrending is true
+          const gamesList = Object.keys(data)
+            .map(key => ({ id: key, ...data[key] }))
+            .filter(game => game.isTrending === true)
+            
+          setTrendingGames(gamesList)
+        } else {
+          setTrendingGames([])
+        }
       } catch (error) {
         console.error("Failed to fetch trending games:", error)
       } finally {
@@ -24,7 +34,6 @@ export default function Home() {
     fetchTrending()
   }, [])
 
-  // Duplicate the array multiple times to ensure the CSS marquee always fills the screen width
   const marqueeGames = [...trendingGames, ...trendingGames, ...trendingGames, ...trendingGames]
 
   return (
