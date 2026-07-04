@@ -125,7 +125,6 @@ export default function Products() {
         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6 md:gap-8">
           
           <div className="flex-1 w-full">
-            {/* FIXED FOR MOBILE: Stacks properly, no text overlapping */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
               <div className="flex items-center gap-3">
                 <HardDrive size={20} className="text-neutral-300 shrink-0" />
@@ -221,11 +220,12 @@ export default function Products() {
             return (
               <div 
                 key={game.id} 
-                className={`w-full bg-[#141414] rounded-sm border overflow-hidden transition-all duration-500 group flex flex-col relative shadow-lg transform-gpu ${
+                className={`w-full bg-[#141414] rounded-sm border overflow-hidden transition-all duration-500 group flex flex-col relative shadow-lg transform-gpu will-change-transform ${
                   isSelected 
                     ? 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]' 
                     : 'border-white/10 hover:border-red-500/50 hover:shadow-[0_10px_30px_rgba(239,68,68,0.2)] md:hover:-translate-y-1.5'
                 }`}
+                style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 380px' }}
               >
                 {isSelected && (
                   <div className="absolute top-2 left-2 z-30 bg-red-500 text-white rounded-full p-1 shadow-lg transform-gpu">
