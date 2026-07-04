@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import Home from './pages/Home.jsx'
-import Products from './pages/Products.jsx'
-import About from './pages/About.jsx'
-import FAQs from './pages/FAQs.jsx'
-import Support from './pages/Support.jsx'
-import Login from './pages/Login.jsx'
-import AdminSettings from './pages/AdminSettings.jsx'
 import logo from './assets/logo.jpg' 
-import { Menu, X, ChevronRight } from 'lucide-react'
+import { Menu, X, ChevronRight, Loader2 } from 'lucide-react'
+
+const Home = lazy(() => import('./pages/Home.jsx'))
+const Products = lazy(() => import('./pages/Products.jsx'))
+const About = lazy(() => import('./pages/About.jsx'))
+const FAQs = lazy(() => import('./pages/FAQs.jsx'))
+const Support = lazy(() => import('./pages/Support.jsx'))
+const Login = lazy(() => import('./pages/Login.jsx'))
+const AdminSettings = lazy(() => import('./pages/AdminSettings.jsx'))
 
 function App() {
   const location = useLocation()
@@ -152,15 +153,24 @@ function App() {
       </div>
 
       <main className="container mx-auto px-6 pt-32 pb-24 relative flex-grow flex flex-col z-10">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/faqs" element={<FAQs />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/settings" element={<AdminSettings />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex-grow flex flex-col items-center justify-center animate-in fade-in duration-500">
+            <Loader2 className="text-red-500 animate-spin mb-4" size={32} />
+            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-red-500 animate-pulse drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">
+              INITIALIZING SECTOR...
+            </div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/faqs" element={<FAQs />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/settings" element={<AdminSettings />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <footer className="w-full border-t border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl py-10 mt-auto z-20 relative transform-gpu">

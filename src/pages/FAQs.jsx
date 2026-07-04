@@ -52,39 +52,41 @@ export default function FAQs() {
         {faqs.map((faq, index) => (
           <div 
             key={index} 
-            className={`bg-[#141414] border rounded-sm overflow-hidden transition-all duration-300 ${openIndex === index ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-white/10 hover:border-white/20'}`}
+            className={`bg-[#141414] border rounded-sm overflow-hidden transition-colors duration-300 transform-gpu ${openIndex === index ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-white/10 hover:border-white/20'}`}
           >
             <button
               onClick={() => setOpenIndex(openIndex === index ? -1 : index)}
-              className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
+              className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none active:scale-[0.99] transition-transform duration-300"
             >
-              <span className={`text-sm font-black uppercase tracking-wide pr-4 ${openIndex === index ? 'text-red-400' : 'text-white'}`}>
+              <span className={`text-sm font-black uppercase tracking-wide pr-4 transition-colors duration-300 ${openIndex === index ? 'text-red-400' : 'text-white'}`}>
                 {faq.question}
               </span>
               <ChevronDown 
                 size={18} 
-                className={`flex-shrink-0 transition-transform duration-300 ${openIndex === index ? 'text-red-400 rotate-180' : 'text-neutral-500'}`} 
+                className={`flex-shrink-0 transition-transform duration-300 transform-gpu ${openIndex === index ? 'text-red-400 rotate-180' : 'text-neutral-500'}`} 
               />
             </button>
             
             <div 
-              className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 pb-5 opacity-100' : 'max-h-0 opacity-0'}`}
+              className={`grid transition-all duration-300 ease-in-out transform-gpu ${openIndex === index ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 pointer-events-none'}`}
             >
-              <p className="text-xs text-neutral-300 leading-relaxed font-medium">
-                {faq.answer}
-              </p>
+              <div className="overflow-hidden">
+                <p className="px-6 pb-5 text-xs text-neutral-300 leading-relaxed font-medium">
+                  {faq.answer}
+                </p>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-sm text-center flex flex-col items-center">
+      <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-sm text-center flex flex-col items-center transform-gpu">
         <MessageSquare size={24} className="text-neutral-600 mb-4" />
         <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">Still need answers?</h3>
         <p className="text-xs text-neutral-400 mb-6">Our comms channel is always open. Reach out to the HQ directly.</p>
         <Link 
           to="/support"
-          className="bg-red-600 text-white px-8 py-3 rounded-sm font-black text-[10px] uppercase tracking-widest hover:bg-red-500 transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+          className="bg-red-600 text-white px-8 py-3 rounded-sm font-black text-[10px] uppercase tracking-widest hover:bg-red-500 transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] active:scale-95"
         >
           Contact Support
         </Link>
