@@ -3,7 +3,7 @@ import { auth, db } from '../firebase'
 import { updatePassword, onAuthStateChanged, signOut } from 'firebase/auth'
 import { ref, push, set, get, child, update, remove } from 'firebase/database'
 import { useNavigate } from 'react-router-dom'
-import { Settings, Gamepad2, TrendingUp, Shield, Save, LogOut, CheckCircle2, AlertTriangle, Trash2, Loader2, Wand2, Link as LinkIcon, Search, Clock, Pencil } from 'lucide-react'
+import { Settings, Gamepad2, TrendingUp, Shield, Save, LogOut, CheckCircle2, AlertTriangle, Trash2, Loader2, Wand2, Link as LinkIcon, Search, Clock, Pencil, Image as ImageIcon } from 'lucide-react'
 
 const RAWG_API_KEY = 'a73ea23a91934b4c9cce7dbe01a9708d'
 
@@ -297,10 +297,25 @@ export default function AdminSettings() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">Cover Image URL</label>
-                    <div className="relative">
-                      <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
-                      <input type="url" value={newGame.image} onChange={e => setNewGame({...newGame, image: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm py-3 pl-9 pr-3 text-xs font-bold text-white focus:outline-none focus:border-red-500" placeholder="https://..." />
+                    <label className="block text-[10px] font-black text-neutral-400 mb-2 tracking-widest uppercase">Cover Image URL (Auto or Manual)</label>
+                    <div className="flex gap-3 items-start">
+                      <div className="relative flex-grow">
+                        <LinkIcon size={14} className="absolute left-3 top-3.5 text-neutral-500" />
+                        <input 
+                          type="url" 
+                          value={newGame.image} 
+                          onChange={e => setNewGame({...newGame, image: e.target.value})} 
+                          className="w-full bg-[#0a0a0a] border border-white/10 rounded-sm py-3 pl-9 pr-3 text-xs font-bold text-white focus:outline-none focus:border-red-500" 
+                          placeholder="Paste direct image link..." 
+                        />
+                      </div>
+                      <div className="w-12 h-12 shrink-0 rounded-sm border border-white/10 bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
+                        {newGame.image ? (
+                          <img src={newGame.image} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                        ) : (
+                          <ImageIcon size={16} className="text-neutral-600" />
+                        )}
+                      </div>
                     </div>
                   </div>
 
