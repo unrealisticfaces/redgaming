@@ -26,7 +26,7 @@ export default function Products() {
           setGames([])
         }
       } catch (error) {
-        console.error("Failed to fetch catalog:", error)
+        console.error(error)
       } finally {
         setLoading(false)
       }
@@ -39,7 +39,7 @@ export default function Products() {
       const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = activeCategory === 'All' || game.category === activeCategory
       return matchesSearch && matchesCategory
-    })
+    }).sort((a, b) => a.title.localeCompare(b.title))
   }, [games, searchQuery, activeCategory])
 
   const { totalUsedSpace, remainingSpace, progressPercentage, isOverCapacity } = useMemo(() => {

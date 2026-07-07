@@ -1,4 +1,5 @@
-import { MapPin, ChevronRight, MessageSquare, PlayCircle, Download, Wrench, Video } from 'lucide-react'
+import { MapPin, ChevronRight, MessageSquare, PlayCircle, Download, Wrench, Video, Terminal, ExternalLink } from 'lucide-react'
+import redToolPreview from '../images/redtool.png'
 
 const socials = [
   {
@@ -165,25 +166,57 @@ export default function Support() {
           </div>
         </div>
 
-        <div className="bg-[#111] border border-white/10 rounded-sm p-6 flex flex-col group hover:border-red-500/40 transition-colors">
-          <div className="flex items-start gap-5 flex-grow">
-            <div className="w-14 h-14 bg-[#0a0a0a] rounded-sm border border-white/10 flex items-center justify-center shrink-0 shadow-inner group-hover:border-red-500/30 transition-colors">
-              <Download size={24} className="text-red-500" />
+        <div className="bg-[#111] border border-white/10 rounded-sm p-4 flex flex-col group hover:border-red-500/40 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-white">
+              <Terminal size={14} className="text-red-500" />
+              <span className="text-xs font-black uppercase tracking-widest">RED_TOOL.exe</span>
             </div>
-            <div>
-              <h4 className="text-sm font-black text-white uppercase tracking-widest mb-1">Required Dependencies</h4>
-              <p className="text-xs font-bold text-neutral-400 leading-relaxed mb-4">Download our custom game update checker and network optimization script. Required for ensuring your titles launch flawlessly.</p>
-              <div className="flex flex-wrap gap-2 mb-2">
-                <span className="px-2 py-1 bg-[#222] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest">v2.4.1</span>
-                <span className="px-2 py-1 bg-[#222] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest">14.2 MB</span>
-                <span className="px-2 py-1 bg-red-500/10 border border-red-500/20 rounded-sm text-[9px] font-black text-red-400 uppercase tracking-widest">Windows</span>
-              </div>
+            <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">v3.0.1</span>
+          </div>
+
+          <div className="relative w-full aspect-video bg-[#0a0a0a] rounded-sm overflow-hidden mb-4 border border-white/5">
+            <img 
+              src={redToolPreview} 
+              alt="RED TOOL Interface Preview" 
+              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent opacity-80"></div>
+            <div className="absolute bottom-3 left-3 flex gap-2">
+              <span className="px-2 py-1 bg-red-500/20 border border-red-500/30 rounded-sm text-[8px] font-black text-red-400 uppercase tracking-widest backdrop-blur-md">DirectX</span>
+              <span className="px-2 py-1 bg-white/10 border border-white/20 rounded-sm text-[8px] font-black text-white uppercase tracking-widest backdrop-blur-md">Visual C++</span>
             </div>
           </div>
           
-          <a href="#" className="w-full mt-6 py-4 bg-red-600 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] active:scale-[0.98] transition-all transform-gpu">
-            <Download size={14} /> Download Package
-          </a>
+          <div className="flex flex-col flex-grow">
+            <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">All-In-One Runtime Installer</h4>
+            <p className="text-[10px] font-bold text-neutral-400 leading-relaxed mb-4">Built in C#, this utility automatically detects and installs missing DirectX and Visual Studio C++ redistributables required for optimal game performance.</p>
+            
+            <a href="https://download1334.mediafire.com/5vflxl7l9szgHPRd0fWUy60cZdchhqw8ay1Y1T0n-XnfLdfwDPzQiGm27wG-1KqcPUhwvt3R0B0-Zu_TwWHXI4wpvRCuioks0UM7In_msfq4tHb_jagbrRhA_B3imx5G6Op1ETMiPsmSQAj06-AlpORCygwxZCG-oGU7lm9O-QIg/dyzzzwunvtjllu1/REDTOOL.rar" target="_blank" rel="noopener noreferrer" className="w-full mt-auto py-3 bg-red-600 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] active:scale-[0.98] transition-all transform-gpu">
+              <Download size={14} /> Download RED TOOL (.rar)
+            </a>
+
+            <div className="mt-4 pt-3 border-t border-white/10">
+              <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest mb-2 block">Additional Runtimes Links:</span>
+              <div className="flex flex-wrap gap-2">
+                <a href="https://www.microsoft.com/en-us/download/details.aspx?id=35" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 py-1.5 bg-[#222] hover:bg-[#333] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest transition-colors">
+                  <ExternalLink size={10} /> DirectX Web
+                </a>
+                <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 py-1.5 bg-[#222] hover:bg-[#333] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest transition-colors">
+                  <ExternalLink size={10} /> VC++ Redist
+                </a>
+                <a href="https://download1351.mediafire.com/6v3kt9bnpjbgiT9f21CtfZElcROPKj5GYBDxRlxzkDJASykBPiAimfLw0DVmHP54We_aQngyhpkPARmfgsJ1wd5R_DT6OJFb0wdUmenLLNx4u7cJvdYCqJw4H8YM1jNe-4RmXxWbEZxvYMDLNJIv6mAzD6j5dyzl0ijv9nIU4ei2/i1l6ffqnidrw93p/All-in-One-Runtime-Installer-1.2.zip" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 py-1.5 bg-[#222] hover:bg-[#333] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest transition-colors">
+                  <ExternalLink size={10} /> All in One 
+                </a>
+                 <a href="https://download947.mediafire.com/o01vaq8ky4mgjkYRhK0Xw39ymS9qwivjt4kYsn-GMi7RFaBMuUQOp1BjT8hiYnqz37VlUbHFri9Z0N3t3-mpmyex7En_sOHp2UoG7AviqGxlo4BBpG49SC7sKe7KaV5oFxu1jNur7dHaYiQvN-3z2pPfsDhuGYr3LvqFePdMWGgr/fdw14q1c75r4pkh/GFWLClient.msi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 py-1.5 bg-[#222] hover:bg-[#333] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest transition-colors">
+                  <ExternalLink size={10} /> GFW
+                </a>
+                 <a href="https://download1077.mediafire.com/s5eq2f53mh1gHz0IXL1159RnRNE7f91TxOQxdOPQa25RjrU46_m-Z_UPCkXipWm5UdAUIpVMco95R8t265WxDkwHs7uD2xOCeoHfjB9AwKCzA0eBDH0_f4IJc1M6hTleNEY85TPAuMqt4irW61OeCe7q1YmfxViOMpGHztHy9VWJ/k5jqld908tsyhok/TikirRedistInstaller.rar" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 py-1.5 bg-[#222] hover:bg-[#333] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest transition-colors">
+                  <ExternalLink size={10} /> TikirRedistInstaller
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
